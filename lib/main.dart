@@ -34,6 +34,9 @@ class AlbumListScreen extends StatefulWidget {
 class _AlbumListScreenState extends State<AlbumListScreen> {
   late Future<List<Album>> futureAlbums;
 
+  // Tracks the currently selected album
+  Album? selectedAlbum;
+
   @override
   void initState() {
     super.initState();
@@ -56,6 +59,47 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
     }
   }
 
+  void selectAlbum(Album album) {
+    setState(() {
+      selectedAlbum = album;
+    });
+  }
+
+  Widget buildSelectedAlbumView() {
+    if (selectedAlbum == null) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Text(
+          'No Album Selected',
+          style: TextStyle(fontSize: 18),
+        ),
+      );
+    }
+
+    return Card(
+      margin: const EdgeInsets.all(16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Selected Album Details',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text('Album ID: ${selectedAlbum!.id}'),
+            Text('User ID: ${selectedAlbum!.userId}'),
+            Text('Title: ${selectedAlbum!.title}'),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,47 +108,63 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      body: FutureBuilder<List<Album>>(
-        future: futureAlbums,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+      body: Column(
+        children: [
+          // Album details displayed above the list
+          buildSelectedAlbumView(),
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error: ${snapshot.error}',
-              ),
-            );
-          }
+          Expanded(
+            child: FutureBuilder<List<Album>>(
+              future: futureAlbums,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: Text('No albums found'),
-            );
-          }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Error: ${snapshot.error}',
+                    ),
+                  );
+                }
 
-          final albums = snapshot.data!;
+                if (!snapshot.hasData ||
+                    snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Text('No albums found'),
+                  );
+                }
 
-          return ListView.builder(
-            itemCount: albums.length,
-            itemBuilder: (context, index) {
-              final album = albums[index];
+                final albums = snapshot.data!;
 
-              return ListTile(
-                leading: CircleAvatar(
-                  child: Text('${album.id}'),
-                ),
-                title: Text(album.title),
-                subtitle: Text('Album ID: ${album.id}'),
-              );
-            },
-          );
-        },
+                return ListView.builder(
+                  itemCount: albums.length,
+                  itemBuilder: (context, index) {
+                    final album = albums[index];
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        child: Text('${album.id}'),
+                      ),
+                      title: Text(album.title),
+                      subtitle: Text(
+                        'Album ID: ${album.id}',
+                      ),
+                      selected: selectedAlbum?.id == album.id,
+                      onTap: () {
+                        selectAlbum(album);
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

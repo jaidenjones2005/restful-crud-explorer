@@ -32,3 +32,17 @@ The main difference between requesting a list of items and requesting a single i
 
 This phase helped me understand how Flutter handles asynchronous API requests and displays data after it finishes loading.
 
+## Phase 2: The Detail Operation
+
+### What I Accomplished
+
+In this phase, I added the ability to select an album from the list and view its details. I used a nullable Album variable called selectedAlbum to track which album is currently selected.
+
+I also used setState to update the selected album when a user clicks on an item. The application now displays the album's ID, user ID, and full title above the list.
+
+### Reflection
+
+Using a state variable to switch between album details is different from navigating between pages because the application stays on the same screen. Instead of opening another page, Flutter rebuilds part of the interface based on the selected album.
+
+This approach makes it easier to display information without adding more complicated navigation logic.
+
