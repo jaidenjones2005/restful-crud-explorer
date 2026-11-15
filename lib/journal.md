@@ -46,3 +46,17 @@ Using a state variable to switch between album details is different from navigat
 
 This approach makes it easier to display information without adding more complicated navigation logic.
 
+## Phase 3: The Delete Operation
+
+### What I Accomplished
+
+In this phase, I added a Delete Album button to the selected album details. When the button is clicked, the application sends an HTTP DELETE request using the selected album's ID.
+
+I also added error handling and checked the server's response status before updating the interface. When the server returns status 200, the selected album is cleared and removed from the visible list.
+
+### Reflection
+
+Checking the status code is important because it confirms whether the server accepted the delete request. If the application updated the interface without checking the response, users might think an album was deleted even if the request failed.
+
+I also learned that JSONPlaceholder is a testing API, so the deletion is not permanent. The application keeps track of deleted albums locally to make the interface behave as expected.
+

@@ -34,8 +34,11 @@ class AlbumListScreen extends StatefulWidget {
 class _AlbumListScreenState extends State<AlbumListScreen> {
   late Future<List<Album>> futureAlbums;
 
-  // Tracks the currently selected album
   Album? selectedAlbum;
+  bool isDeleting = false;
+
+  // Tracks albums removed during this session
+  final Set<int> deletedAlbumIds = {};
 
   @override
   void initState() {
@@ -60,9 +63,62 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
   }
 
   void selectAlbum(Album album) {
+    if (isDeleting) return;
+
     setState(() {
       selectedAlbum = album;
     });
+  }
+
+  Future<void> deleteAlbum() async {
+    if (selectedAlbum == null || isDeleting) return;
+
+    final album = selectedAlbum!;
+
+    setState(() {
+      isDeleting = true;
+    });
+
+    try {
+      final response = await http.delete(
+        Uri.parse(
+          'https://jsonplaceholder.typicode.com/albums/${album.id}',
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+
+        setState(() {
+          deletedAlbumIds.add(album.id);
+          selectedAlbum = null;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Album deleted successfully!'),
+          ),
+        );
+      } else {
+        throw Exception(
+          'Failed to delete album. Status: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isDeleting = false;
+        });
+      }
+    }
   }
 
   Widget buildSelectedAlbumView() {
@@ -94,6 +150,18 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
             Text('Album ID: ${selectedAlbum!.id}'),
             Text('User ID: ${selectedAlbum!.userId}'),
             Text('Title: ${selectedAlbum!.title}'),
+            const SizedBox(height: 15),
+            ElevatedButton.icon(
+              onPressed: isDeleting ? null : deleteAlbum,
+              icon: const Icon(Icons.delete),
+              label: Text(
+                isDeleting ? 'Deleting...' : 'Delete Album',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+            ),
           ],
         ),
       ),
@@ -110,7 +178,6 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
       ),
       body: Column(
         children: [
-          // Album details displayed above the list
           buildSelectedAlbumView(),
 
           Expanded(
@@ -139,7 +206,18 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                   );
                 }
 
-                final albums = snapshot.data!;
+                final albums = snapshot.data!
+                    .where(
+                      (album) =>
+                  !deletedAlbumIds.contains(album.id),
+                )
+                    .toList();
+
+                if (albums.isEmpty) {
+                  return const Center(
+                    child: Text('No albums remaining'),
+                  );
+                }
 
                 return ListView.builder(
                   itemCount: albums.length,
