@@ -60,3 +60,25 @@ Checking the status code is important because it confirms whether the server acc
 
 I also learned that JSONPlaceholder is a testing API, so the deletion is not permanent. The application keeps track of deleted albums locally to make the interface behave as expected.
 
+## Phase 4: Validation & Reflection
+
+### What I Accomplished
+
+In this phase, I tested my RESTful CRUD Explorer application to make sure the main features worked correctly. I checked that the application could fetch albums from the JSONPlaceholder API, display them in a scrollable list, show album details when selected, and send a DELETE request.
+
+I also reviewed the loading and error handling logic to make sure the application could respond properly when requests failed.
+
+### Testing Results
+
+I tested the full process of fetching the album list, selecting an album, and deleting it. I also checked that the selected album was cleared after deletion and that the interface returned to the default "No Album Selected" message.
+
+One behavior I noticed was that JSONPlaceholder does not permanently delete albums. The application handles this by hiding deleted albums locally during the current session.
+
+### AI Review & Reflection
+
+I used ChatGPT as an AI tutor to review my application's structure and logic. The feedback focused on checking HTTP response status codes, handling failed requests, and updating the interface only after successful operations.
+
+I kept the application simple by using StatefulWidget, FutureBuilder, and setState instead of introducing more advanced state management patterns.
+
+This project helped me better understand how Flutter communicates with REST APIs and how asynchronous operations affect the user interface.
+
